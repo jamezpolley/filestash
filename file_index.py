@@ -35,12 +35,8 @@ def hashes(stream, hashers):
 class File(object):
     """A single on-disk file
 
-    * file type - optional
-    * hashes - md5, sha
-
-    Body:
-        * payload hashes
-        * payload metadata
+    TODO: file type detection
+    TODO: payload detection; payload hashes; payload metadata
 
     """
 
@@ -53,6 +49,8 @@ class File(object):
         self.file_name = os.path.basename(file_path)
         self.collection_date = datetime.datetime.now()
         self.collection_host = hostname or platform.node()
+        self.md5, self.sha1 = hashes(open(file_path),
+                                     (hashlib.md5(), hashlib.sha1()))
 
 def main():
     tag = sys.argv[1]
