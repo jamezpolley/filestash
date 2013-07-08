@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from functools import total_ordering
+import collections
 import datetime
 import hashlib
 import os
@@ -52,30 +54,46 @@ class File(object):
         self.md5, self.sha1 = hashes(open(file_path),
                                      (hashlib.md5(), hashlib.sha1()))
 
-    def __repr__(self):
+    def __str__(self):
         """Simple string representing the file.  """
+        return "%(sha1)s %(file_name)s" % self.__dict__
 
-        repr = "%(collection_date)s %(file_name)s: %(md5)s %(sha1)s %(stat)s" % self.__dict__
-        return repr
+class FileBucket(dict):
+    """Bucket for storing Files.
+
+    It's a multidict. Like a dict but values are stored in lists to handle duplicates.
+    """
+
+    def __setitem__(self, key, item):
+        """@todo: Docstring for __setitem__
+
+        :arg1: @todo
+        :returns: @todo
+        """
+
+        self.setdefault(key, []).append(item)
+
+
 
 def main():
     tag = sys.argv[1]
     file_path = sys.argv[2]
 
-    all_files = {}
+    fb = FileBucket()
 
     if os.path.isdir(file_path):
         for root, dirs, files in os.walk(file_path):
             base = os.path.abspath(root)
             for file in files:
                 full_path = os.path.join(base, file)
-                all_files[full_path] = File(tag, full_path)
+                f = File(tag, full_path)
+                fb[f.sha1] = f
     else:
         full_path = os.path.abspath(file_path)
-        myfile = File(tag, full_path)
-        all_files[full_path] = myfile
+        f = File(tag, full_path)
+        fb[f.sha1] = f
 
-    print yaml.dump(all_files)
+    print yaml.dump(fb)
 
 if __name__ == '__main__':
     main()
