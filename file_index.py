@@ -58,20 +58,17 @@ class File(object):
         """Simple string representing the file.  """
         return "%(sha1)s %(file_name)s" % self.__dict__
 
-class FileBucket(dict):
+class FileBucket(collections.defaultdict):
     """Bucket for storing Files.
 
     It's a multidict. Like a dict but values are stored in lists to handle duplicates.
     """
 
-    def __setitem__(self, key, item):
-        """@todo: Docstring for __setitem__
+    def __init__(self):
+        super(FileBucket, self).__init__(list)
 
-        :arg1: @todo
-        :returns: @todo
-        """
-
-        self.setdefault(key, []).append(item)
+    def add_file(self, file):
+        self[file.sha1].append(file)
 
 
 
@@ -87,11 +84,11 @@ def main():
             for file in files:
                 full_path = os.path.join(base, file)
                 f = File(tag, full_path)
-                fb[f.sha1] = f
+                fb.add_file(f)
     else:
         full_path = os.path.abspath(file_path)
         f = File(tag, full_path)
-        fb[f.sha1] = f
+        fb.add_file(f)
 
     print yaml.dump(fb)
 
