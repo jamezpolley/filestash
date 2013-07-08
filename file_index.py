@@ -36,7 +36,7 @@ def hashes(stream, hashers):
     digests = [ hasher.hexdigest() for hasher in hashers ]
     return digests
 
-class File(object):
+class FileStats(object):
     """A single on-disk file
 
     TODO: file type detection
@@ -58,39 +58,60 @@ class File(object):
         """Simple string representing the file.  """
         return "%(sha1)s %(file_name)s" % self.__dict__
 
-class FileBucket(collections.defaultdict):
-    """Bucket for storing Files.
+class FileStatsBucket(collections.defaultdict):
+    """Bucket for storing FileStats.
 
     It's a multidict. Like a dict but values are stored in lists to handle duplicates.
     """
 
     def __init__(self):
-        super(FileBucket, self).__init__(list)
+        super(FileStatsBucket, self).__init__(list)
 
     def add_file(self, file):
         self[file.sha1].append(file)
 
+class FilesystemStatsCollector(object):
+    """Walks the filesystem, collects FileStats and stores them in a Bucket"""
 
+    def __init__(self, tag, collection_date=None, collection_host=None):
+        """Create the Collector
+
+        :tag: tag to record on FileStats
+        :collection_date: date to record on FileStats
+        :collection_host: host to record on FileStats
+        """
+        self._bucket = FileStatsBucket()
+        self.tag = tag
+        self.collection_date = collection_date
+        self.collection_host = collection_host
+
+    def add(self, file_path):
+        """Collect stats on files under file_path and add them to the bucket.
+
+        :file_path: @todo
+        :returns: @todo
+
+        """
+        if os.path.isdir(file_path):
+            for root, dirs, files in os.walk(file_path):
+                base = os.path.abspath(root)
+                for file in files:
+                    full_path = os.path.join(base, file)
+                    f = FileStats(self.tag, full_path)
+                    self._bucket.add_file(f)
+        else:
+            full_path = os.path.abspath(file_path)
+            f = FileStats(self.tag, full_path)
+            self._bucket.add_file(f)
 
 def main():
     tag = sys.argv[1]
     file_path = sys.argv[2]
 
-    fb = FileBucket()
+    collector = FilesystemStatsCollector(tag)
+    collector.add(file_path)
 
-    if os.path.isdir(file_path):
-        for root, dirs, files in os.walk(file_path):
-            base = os.path.abspath(root)
-            for file in files:
-                full_path = os.path.join(base, file)
-                f = File(tag, full_path)
-                fb.add_file(f)
-    else:
-        full_path = os.path.abspath(file_path)
-        f = File(tag, full_path)
-        fb.add_file(f)
-
-    print yaml.dump(fb)
+    print yaml.dump(collector._bucket)
 
 if __name__ == '__main__':
     main()

@@ -46,16 +46,16 @@ class TestFileRead(unittest.TestCase):
     def test_sha1(self):
         self.assertEqual(self.sha1, self.digests[1])
 
-class TestFileBucketDuplicateHandling(unittest.TestCase):
+class TestFileStatsBucketDuplicateHandling(unittest.TestCase):
     """Hash some files, add them to the bucket, retrieve details"""
 
     def setUp(self):
-        self.fb = file_index.FileBucket()
+        self.fb = file_index.FileStatsBucket()
         self.key = "f5c13d47495264cfa13f6d46ec52e7ad42474e53"
         self.test_filenames = ["test_file_1", "test_file_2"]
         for filename in self.test_filenames:
-            f = file_index.File('tag', "tests/data/%s" % filename)
-            self.fb[f.sha1] = f
+            f = file_index.FileStats('tag', "tests/data/%s" % filename)
+            self.fb.add_file(f)
 
     def tearDown(self):
         pass
