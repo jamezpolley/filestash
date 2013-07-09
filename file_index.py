@@ -65,9 +65,15 @@ class FileStatsBucket(collections.defaultdict):
     """
 
     def __init__(self):
+        self.duplicates = set([])
         super(FileStatsBucket, self).__init__(list)
 
+    def __str__(self):
+        return yaml.dump((self.duplicates, self))
+
     def add_file(self, file):
+        if file.sha1 in self:
+            self.duplicates.add(file.sha1)
         self[file.sha1].append(file)
 
 class FilesystemStatsCollector(object):
@@ -111,7 +117,7 @@ def main():
     collector = FilesystemStatsCollector(tag)
     collector.add(file_path)
 
-    print yaml.dump(collector._bucket)
+    print collector._bucket
 
 if __name__ == '__main__':
     main()
