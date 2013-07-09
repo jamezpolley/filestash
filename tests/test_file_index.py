@@ -31,7 +31,7 @@ class TestFileRead(unittest.TestCase):
     """Read file; check attributes; hash"""
 
     def setUp(self):
-        in_file= open("tests/data/test_file_1")
+        in_file= open("tests/data/dir1/test_file_1")
         self.md5 = "0035e1010ea5e875c8776c69dd0ee03e"
         self.sha1 = "f5c13d47495264cfa13f6d46ec52e7ad42474e53"
         hashers = [ hashlib.md5(), hashlib.sha1() ]
@@ -54,7 +54,7 @@ class TestFileStatsBucketDuplicateHandling(unittest.TestCase):
         self.key = "f5c13d47495264cfa13f6d46ec52e7ad42474e53"
         self.test_filenames = ["test_file_1", "test_file_2"]
         for filename in self.test_filenames:
-            f = file_index.FileStats('tag', "tests/data/%s" % filename)
+            f = file_index.FileStats('tag', "tests/data/dir1/%s" % filename)
             self.fb.add_file(f)
 
     def tearDown(self):
