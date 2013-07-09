@@ -76,6 +76,10 @@ class FileStatsBucket(collections.defaultdict):
             self.duplicates.add(file.sha1)
         self[file.sha1].append(file)
 
+    def add_bucket(self, bucket):
+        for sha1, file in bucket.iteritems():
+            self[sha1] = file
+
 class FilesystemStatsCollector(object):
     """Walks the filesystem, collects FileStats and stores them in a Bucket"""
 
